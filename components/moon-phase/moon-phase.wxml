@@ -1,0 +1,4 @@
+<view class="moon-phase">
+  <text class="moon-icon">{{icon}}</text>
+  <text class="moon-text">{{phase}}</text>
+</view>

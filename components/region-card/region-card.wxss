@@ -1,0 +1,8 @@
+.region-card {
+  display: flex; align-items: center; gap: 12rpx;
+  padding: 16rpx 20rpx;
+  background-color: #122A45; border-radius: 8rpx; margin-bottom: 8rpx;
+}
+.region-name { font-size: 28rpx; color: #FFFFFF; font-weight: bold; flex: 1; }
+.region-city { font-size: 22rpx; color: #8BA4B8; }
+.region-type { font-size: 20rpx; color: #2D8B6F; padding: 4rpx 8rpx; background-color: rgba(45,139,111,0.15); border-radius: 4rpx; }

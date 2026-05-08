@@ -1,0 +1,60 @@
+<scroll-view class="container" scroll-y>
+  <!-- Month Navigation -->
+  <view class="month-nav">
+    <view class="nav-btn" bindtap="prevMonth">◀</view>
+    <text class="month-title">{{year}}年{{month < 10 ? '0' + month : month}}月</text>
+    <view class="nav-btn" bindtap="nextMonth">▶</view>
+    <view class="today-btn" bindtap="goToday">今天</view>
+  </view>
+
+  <!-- Week Headers -->
+  <view class="week-header">
+    <text wx:for="{{weekHeaders}}" wx:key="*this" class="week-cell">{{item}}</text>
+  </view>
+
+  <!-- Calendar Grid -->
+  <view class="calendar-grid">
+    <view
+      wx:for="{{days}}"
+      wx:key="dateStr"
+      class="day-cell {{item.empty ? 'empty' : ''}} {{item.isToday ? 'today' : ''}} {{item.isSelected ? 'selected' : ''}}"
+      data-date="{{item.dateStr}}"
+      bindtap="{{item.empty ? '' : 'onDayTap'}}"
+    >
+      <block wx:if="{{!item.empty}}">
+        <text class="day-num">{{item.day}}</text>
+        <text class="lunar-day">{{item.lunarDay}}</text>
+        <text class="attr-tag {{item.attrClass}}">{{item.attrShort}}{{item.periodShort}}</text>
+      </block>
+    </view>
+  </view>
+
+  <!-- Selected Date Info -->
+  <view class="selected-info" wx:if="{{selectedDate}}">
+    <text class="selected-date">已选择日期：{{selectedDate}}</text>
+    <view class="explain-box" wx:if="{{tideExplain}}">
+      <text class="explain-title">注：</text>
+      <text class="explain-text">{{tideExplain}}</text>
+    </view>
+  </view>
+
+  <!-- Nearby Regions -->
+  <view class="nearby-section">
+    <text class="nearby-title">我的：</text>
+    <view class="nearby-list">
+      <view
+        wx:for="{{nearbyRegions}}"
+        wx:key="id"
+        class="nearby-item"
+        data-id="{{item.id}}"
+        bindtap="goToRegion"
+      >
+        <text class="nearby-name">{{item.name}}</text>
+        <text class="nearby-distance" wx:if="{{item.distance}}">{{item.distance}}km</text>
+        <text class="nearby-fav" wx:if="{{item.isFav}}">★</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-space"></view>
+</scroll-view>

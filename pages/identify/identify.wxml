@@ -1,0 +1,76 @@
+<scroll-view class="container" scroll-y>
+  <!-- Top Bar -->
+  <view class="top-bar">
+    <view class="camera-btn" bindtap="takePhoto">📷</view>
+    <view class="search-wrap">
+      <input
+        class="search-input"
+        placeholder="左边 拍照或者输入要查找鱼的名字"
+        placeholder-style="color: #8BA4B8;"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="searchByName"
+      />
+    </view>
+    <view class="search-btn" bindtap="searchByName">🔍</view>
+  </view>
+
+  <!-- Identify Area -->
+  <view class="identify-area" bindtap="chooseImage">
+    <view class="identify-content" wx:if="{{!imagePath && !isIdentifying}}">
+      <text class="identify-title">识鱼</text>
+      <view class="identify-icon-box">
+        <text class="identify-icon">📸</text>
+      </view>
+      <text class="identify-hint">请选择要识别的照片</text>
+      <text class="identify-sub">（点击）通过拍照或者图片识别鱼</text>
+    </view>
+
+    <view class="identify-preview" wx:if="{{imagePath}}">
+      <image src="{{imagePath}}" mode="aspectFit" class="preview-image" />
+      <view class="loading-overlay" wx:if="{{isIdentifying}}">
+        <text class="loading-text">识别中...</text>
+      </view>
+    </view>
+  </view>
+
+  <text class="identify-note">鱼库中收集了上万种鱼类信息，可以通过拍照或者图片识别鱼</text>
+
+  <!-- Result -->
+  <view class="result-card" wx:if="{{showResult && result}}">
+    <view class="result-close" bindtap="closeResult">✕</view>
+    <view class="result-header">
+      <text class="result-name">{{result.name}}</text>
+      <text class="result-latin">{{result.latin}}</text>
+    </view>
+    <view class="result-tags">
+      <text class="tag {{result.edible ? 'tag-excellent' : 'tag-bad'}}">{{result.edible ? '可食用' : '不可食用'}}</text>
+      <text class="tag tag-normal">{{result.category}}</text>
+      <text class="tag tag-good">置信度 {{result.confidence}}%</text>
+    </view>
+    <text class="result-desc">{{result.desc}}</text>
+  </view>
+
+  <!-- History -->
+  <view class="history-section" wx:if="{{history.length > 0}}">
+    <view class="history-header">
+      <text class="history-title">识别历史</text>
+      <text class="clear-btn" bindtap="clearHistory">清空</text>
+    </view>
+    <view class="history-list">
+      <view
+        class="history-item"
+        wx:for="{{history}}"
+        wx:key="timestamp"
+        data-index="{{index}}"
+        bindtap="viewHistoryItem"
+      >
+        <text class="history-name">{{item.name}}</text>
+        <text class="history-category">{{item.category}}</text>
+        <text class="history-confidence">{{item.confidence}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-space"></view>
+</scroll-view>

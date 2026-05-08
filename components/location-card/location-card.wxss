@@ -1,0 +1,99 @@
+.location-card {
+  background-color: #122A45;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 12rpx;
+  border-left: 4rpx solid #2D8B6F;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.card-location {
+  flex: 1;
+  font-size: 24rpx;
+  color: #E8F0F2;
+}
+
+.province { color: #2D8B6F; }
+.sep { color: #8BA4B8; margin: 0 4rpx; }
+.city { color: #8BA4B8; }
+.name { color: #FFFFFF; font-weight: bold; }
+.distance { color: #F5A623; font-size: 22rpx; margin-left: 8rpx; }
+
+.report-btn {
+  background-color: #2D8B6F;
+  color: #FFFFFF;
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 6rpx;
+  flex-shrink: 0;
+}
+
+.card-body { margin-top: 8rpx; }
+
+.tide-time-row {
+  margin-bottom: 8rpx;
+}
+
+.tide-time-row .label {
+  font-size: 22rpx;
+  color: #8BA4B8;
+}
+
+.tide-detail-row { margin-bottom: 8rpx; }
+
+.tide-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.tide-point {
+  font-size: 22rpx;
+  color: #E8F0F2;
+  background-color: rgba(45, 139, 111, 0.15);
+  padding: 4rpx 8rpx;
+  border-radius: 4rpx;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 8rpx;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  font-size: 24rpx;
+  font-weight: bold;
+}
+
+.rating.excellent { color: #2D8B6F; }
+.rating.good { color: #F5A623; }
+.rating.normal { color: #8BA4B8; }
+.rating.bad { color: #E74C3C; }
+
+.score { font-size: 28rpx; }
+.rating-text { font-size: 22rpx; }
+
+.type-tag {
+  font-size: 20rpx;
+  color: #8BA4B8;
+  background-color: rgba(139, 164, 184, 0.15);
+  padding: 4rpx 10rpx;
+  border-radius: 4rpx;
+}
+
+.countdown {
+  font-size: 22rpx;
+  color: #F5A623;
+  margin-left: auto;
+}

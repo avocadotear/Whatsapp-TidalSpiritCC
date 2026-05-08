@@ -1,0 +1,3 @@
+.moon-phase { display: flex; align-items: center; gap: 6rpx; }
+.moon-icon { font-size: 32rpx; }
+.moon-text { font-size: 22rpx; color: #F5A623; }

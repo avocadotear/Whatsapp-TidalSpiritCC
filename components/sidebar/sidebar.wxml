@@ -1,0 +1,11 @@
+<scroll-view class="sidebar" scroll-y>
+  <view
+    wx:for="{{items}}"
+    wx:key="*this"
+    class="sidebar-item {{item === current ? 'active' : ''}}"
+    data-item="{{item}}"
+    bindtap="onTap"
+  >
+    <text>{{item}}</text>
+  </view>
+</scroll-view>

@@ -1,0 +1,101 @@
+.container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.satellite-btn {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  background-color: #0D2B4E;
+  color: #E8F0F2;
+  padding: 12rpx 20rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+.locate-btn {
+  position: absolute;
+  bottom: 300rpx;
+  right: 20rpx;
+  width: 80rpx;
+  height: 80rpx;
+  background-color: #0D2B4E;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 36rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+.popup {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+}
+
+.popup-card {
+  background-color: #0D2B4E;
+  border-top-left-radius: 24rpx;
+  border-top-right-radius: 24rpx;
+  padding: 24rpx;
+  position: relative;
+}
+
+.popup-close {
+  position: absolute;
+  top: 16rpx;
+  right: 20rpx;
+  font-size: 32rpx;
+  color: #8BA4B8;
+  padding: 8rpx;
+}
+
+.popup-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #FFFFFF;
+  margin-bottom: 12rpx;
+}
+
+.popup-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  margin-bottom: 16rpx;
+}
+
+.popup-detail {
+  font-size: 24rpx;
+  color: #8BA4B8;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.popup-btn {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+}
+
+.popup-btn.primary {
+  background-color: #2D8B6F;
+  color: #FFFFFF;
+}

@@ -1,0 +1,12 @@
+.chart-container {
+  width: 100%;
+  height: 400rpx;
+  background-color: #0A1628;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.tide-canvas {
+  width: 100%;
+  height: 100%;
+}

@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# macOS
+.DS_Store
+
+# WeChat Mini Program - private config
+project.private.config.json
+
+# IDE
+.vscode/
+.idea/

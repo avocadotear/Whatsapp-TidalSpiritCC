@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "潮汐精灵",
+  "usingComponents": {
+    "sidebar": "/components/sidebar/sidebar",
+    "location-card": "/components/location-card/location-card",
+    "search-bar": "/components/search-bar/search-bar"
+  }
+}

@@ -1,0 +1,9 @@
+.weather-badge {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+.weather-icon { font-size: 36rpx; }
+.weather-info { display: flex; flex-direction: column; }
+.temp { font-size: 28rpx; color: #E8F0F2; font-weight: bold; }
+.weather-text { font-size: 20rpx; color: #8BA4B8; }

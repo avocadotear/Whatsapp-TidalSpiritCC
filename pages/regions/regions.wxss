@@ -1,0 +1,128 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #0A1628;
+}
+
+.distance-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 20rpx;
+  background-color: #0D2B4E;
+}
+
+.distance-label {
+  font-size: 24rpx;
+  color: #8BA4B8;
+}
+
+.recalc-btn {
+  background-color: #2D8B6F;
+  color: #FFFFFF;
+  font-size: 22rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 6rpx;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+.region-list {
+  flex: 1;
+  padding: 12rpx;
+  height: 100%;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300rpx;
+  color: #8BA4B8;
+  font-size: 28rpx;
+}
+
+.float-btn {
+  position: fixed;
+  right: 30rpx;
+  bottom: 220rpx;
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+.float-btn.beachcombing {
+  background-color: #E74C3C;
+}
+
+.float-btn.fishing {
+  background-color: #2D8B6F;
+}
+
+.float-icon {
+  font-size: 32rpx;
+}
+
+.float-text {
+  font-size: 18rpx;
+  color: #FFFFFF;
+  margin-top: 2rpx;
+}
+
+.date-bar {
+  background-color: #0D2B4E;
+  padding: 12rpx 0;
+  border-top: 1rpx solid rgba(139, 164, 184, 0.2);
+}
+
+.date-scroll {
+  white-space: nowrap;
+}
+
+.date-list {
+  display: inline-flex;
+  padding: 0 12rpx;
+}
+
+.date-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8rpx 16rpx;
+  margin: 0 6rpx;
+  border-radius: 8rpx;
+  min-width: 100rpx;
+}
+
+.date-item.active {
+  background-color: #2D8B6F;
+}
+
+.date-day {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #FFFFFF;
+}
+
+.date-attr {
+  font-size: 18rpx;
+  color: #8BA4B8;
+  margin-top: 4rpx;
+  white-space: nowrap;
+}
+
+.date-item.active .date-attr {
+  color: rgba(255, 255, 255, 0.8);
+}

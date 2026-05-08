@@ -1,0 +1,62 @@
+{
+  "pages": [
+    "pages/regions/regions",
+    "pages/map/map",
+    "pages/calendar/calendar",
+    "pages/identify/identify",
+    "pages/profile/profile",
+    "pages/region-detail/region-detail"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#0D2B4E",
+    "navigationBarTitleText": "潮汐精灵",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0A1628",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#8BA4B8",
+    "selectedColor": "#FFFFFF",
+    "backgroundColor": "#0D2B4E",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/regions/regions",
+        "text": "地区",
+        "iconPath": "images/tabbar/region.png",
+        "selectedIconPath": "images/tabbar/region-active.png"
+      },
+      {
+        "pagePath": "pages/map/map",
+        "text": "地图",
+        "iconPath": "images/tabbar/map.png",
+        "selectedIconPath": "images/tabbar/map-active.png"
+      },
+      {
+        "pagePath": "pages/calendar/calendar",
+        "text": "潮历",
+        "iconPath": "images/tabbar/calendar.png",
+        "selectedIconPath": "images/tabbar/calendar-active.png"
+      },
+      {
+        "pagePath": "pages/identify/identify",
+        "text": "鱼库",
+        "iconPath": "images/tabbar/identify.png",
+        "selectedIconPath": "images/tabbar/identify-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/tabbar/profile.png",
+        "selectedIconPath": "images/tabbar/profile-active.png"
+      }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于计算您与赶海点的距离"
+    }
+  },
+  "requiredPrivateInfos": ["getLocation"],
+  "sitemapLocation": "sitemap.json"
+}

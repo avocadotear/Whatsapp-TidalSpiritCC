@@ -1,0 +1,180 @@
+<scroll-view class="container" scroll-y>
+  <!-- Header -->
+  <view class="header">
+    <view class="header-top">
+      <weather-badge temperature="{{environmental.airTemp}}" weather="晴" humidity="{{environmental.humidity}}" />
+      <view class="header-location">
+        <text class="location-name">{{region.city}}·{{region.name}}</text>
+        <text class="header-date">{{selectedDate}} 农历{{lunar.dayStr}} {{lunar.weekDay}}</text>
+        <text class="header-attr">{{attribute.tideType}}({{attribute.tidePeriod}})</text>
+      </view>
+      <view class="fav-btn" bindtap="toggleFavorite">
+        <text>{{isFavorite ? '★' : '☆'}}</text>
+      </view>
+    </view>
+    <view class="mode-toggle" bindtap="toggleMode">
+      <text class="mode-icon">{{mode === 'fishing' ? '🎣' : '🦀'}}</text>
+      <text class="mode-label">{{mode === 'fishing' ? '钓鱼模式' : '赶海模式'}}</text>
+    </view>
+  </view>
+
+  <!-- Tide Chart -->
+  <view class="chart-section">
+    <view class="chart-header">
+      <text class="chart-title">潮汐刻度：10分钟</text>
+      <text class="chart-info">潮高：{{tides[0].height || '--'}}m</text>
+    </view>
+    <tide-chart
+      tides="{{tides}}"
+      curve="{{curve}}"
+      flowSpeed="{{flowSpeed}}"
+      sunrise="{{sunrise}}"
+      sunset="{{sunset}}"
+      mode="{{mode}}"
+    />
+  </view>
+
+  <!-- Date Navigation -->
+  <view class="date-nav">
+    <scroll-view class="date-scroll" scroll-x>
+      <view class="date-list">
+        <view
+          wx:for="{{dates}}"
+          wx:key="date"
+          class="date-chip {{selectedDate === item.date ? 'active' : ''}}"
+          data-date="{{item.date}}"
+          bindtap="onDateSelect"
+        >
+          <text class="chip-day">{{item.day}}</text>
+          <text class="chip-attr">{{item.attribute}}</text>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="day-buttons">
+      <view class="day-btn" bindtap="prevDay">前一天</view>
+      <view class="day-btn center">{{selectedDate}}</view>
+      <view class="day-btn" bindtap="nextDay">后一天</view>
+    </view>
+  </view>
+
+  <!-- Tide Periods Table -->
+  <view class="section">
+    <view class="section-header" bindtap="toggleTideTable">
+      <text class="section-title">导航和涨退潮情况</text>
+      <text class="toggle-text">{{showTideTable ? '关闭辅助' : '去辅辅助'}}</text>
+    </view>
+
+    <view class="tide-table" wx:if="{{showTideTable || true}}">
+      <view class="compass-icon">🧭</view>
+
+      <!-- Tide Periods -->
+      <view class="periods-table">
+        <view class="table-header">
+          <text class="col-time">涨潮-退潮时间</text>
+          <text class="col-height">潮水高度变化</text>
+        </view>
+        <view class="table-row" wx:for="{{periods}}" wx:key="start">
+          <text class="col-time">{{item.start}} ~ {{item.end}}</text>
+          <text class="col-status {{item.status === '涨潮' ? 'rising' : 'falling'}}">{{item.status}}</text>
+          <text class="col-height">{{item.startHeight}} → {{item.endHeight}} ±{{item.change}}米</text>
+        </view>
+      </view>
+
+      <!-- High/Low Summary -->
+      <view class="summary-row">
+        <view class="summary-group">
+          <text class="summary-label">潮况</text>
+          <view class="summary-items">
+            <text wx:for="{{summary.highs}}" wx:key="time" class="summary-item high">满潮 {{item.time}} {{item.height}}m</text>
+            <text wx:for="{{summary.lows}}" wx:key="time" class="summary-item low">干潮 {{item.time}} {{item.height}}m</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Recommendations -->
+  <view class="section">
+    <view class="rec-banner">
+      <text>推荐{{mode === 'fishing' ? '钓鱼' : '赶海'}}时间</text>
+      <text class="rec-hint">（新手选"优"和"好"去）</text>
+    </view>
+    <view class="rec-list">
+      <view class="rec-item" wx:for="{{recommendations}}" wx:key="index">
+        <text class="rec-index">{{item.index}}</text>
+        <text class="rec-time">{{item.start}} ~ {{item.end}}</text>
+        <view class="rec-score-wrap">
+          <text class="rec-score">评分：{{item.score}}</text>
+          <text class="rec-rating {{item.ratingClass}}">{{item.rating}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Environmental Data -->
+  <view class="section">
+    <text class="section-title">环境信息</text>
+    <view class="env-grid">
+      <view class="env-item">
+        <text class="env-label">日出</text>
+        <text class="env-value">{{sunrise}}</text>
+      </view>
+      <view class="env-item">
+        <text class="env-label">日落</text>
+        <text class="env-value">{{sunset}}</text>
+      </view>
+      <view class="env-item">
+        <text class="env-label">气温</text>
+        <text class="env-value">{{environmental.airTemp}}°C</text>
+      </view>
+      <view class="env-item">
+        <text class="env-label">水温</text>
+        <text class="env-value">{{environmental.waterTemp}}°C</text>
+      </view>
+      <view class="env-item">
+        <text class="env-label">湿度</text>
+        <text class="env-value">{{environmental.humidity}}%</text>
+      </view>
+      <view class="env-item">
+        <text class="env-label">气压</text>
+        <text class="env-value">{{environmental.pressure}}hpa</text>
+      </view>
+      <view class="env-item">
+        <text class="env-label">辐射</text>
+        <text class="env-value">{{environmental.radiation}}</text>
+      </view>
+      <view class="env-item">
+        <text class="env-label">可见度</text>
+        <text class="env-value">{{environmental.visibility}}</text>
+      </view>
+      <view class="env-item">
+        <text class="env-label">浪高</text>
+        <text class="env-value">{{environmental.waveHeight}}</text>
+      </view>
+      <view class="env-item">
+        <text class="env-label">风级</text>
+        <text class="env-value">{{environmental.windLevel}}</text>
+      </view>
+      <view class="env-item full-width">
+        <text class="env-label">风速</text>
+        <text class="env-value">{{environmental.windSpeed}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Disclaimer -->
+  <view class="section disclaimer">
+    <text class="disclaimer-text">潮汐为天文潮位，不包括由于气象或其他原因造成的增减水变化。天文潮汐是海洋受月球和太阳引力作用产生的周期性现象规律。在特殊情况下，还受台风台流、潮水等因素影响。</text>
+  </view>
+
+  <!-- Comments -->
+  <view class="section">
+    <text class="section-title">留言板</text>
+    <view class="comment-item">
+      <text class="comment-user">潮汐精灵·管理员</text>
+      <text class="comment-text">数据异常情况在我的设置里清理缓存重新打开。</text>
+    </view>
+  </view>
+
+  <view class="bottom-space"></view>
+</scroll-view>

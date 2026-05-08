@@ -1,0 +1,38 @@
+<view class="container">
+  <map
+    class="map"
+    latitude="{{latitude}}"
+    longitude="{{longitude}}"
+    scale="{{scale}}"
+    markers="{{markers}}"
+    show-location
+    enable-satellite="{{showSatellite}}"
+    bindmarkertap="onMarkerTap"
+  ></map>
+
+  <!-- Satellite Toggle -->
+  <view class="satellite-btn" bindtap="toggleSatellite">
+    <text>{{showSatellite ? '标准地图' : '卫星地图'}}</text>
+  </view>
+
+  <!-- Location Button -->
+  <view class="locate-btn" bindtap="moveToLocation">
+    <text>📍</text>
+  </view>
+
+  <!-- Region Popup -->
+  <view class="popup" wx:if="{{selectedRegion}}">
+    <view class="popup-card">
+      <view class="popup-close" bindtap="closePopup">✕</view>
+      <view class="popup-title">{{selectedRegion.name}}</view>
+      <view class="popup-info">
+        <text class="popup-detail">最近赶海时间：{{selectedTide.date}}</text>
+        <text class="popup-detail">{{selectedTide.tideTime}} {{selectedTide.attribute}}</text>
+        <text class="popup-detail" wx:if="{{selectedRegion.distance}}">距离：{{selectedRegion.distance}}公里</text>
+      </view>
+      <view class="popup-actions">
+        <view class="popup-btn primary" bindtap="viewRegionDetail">查看+位置潮汐</view>
+      </view>
+    </view>
+  </view>
+</view>

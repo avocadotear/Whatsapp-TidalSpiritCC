@@ -1,0 +1,7 @@
+<view class="weather-badge">
+  <text class="weather-icon">☀️</text>
+  <view class="weather-info">
+    <text class="temp">{{temperature}}°C</text>
+    <text class="weather-text">{{weather}}</text>
+  </view>
+</view>

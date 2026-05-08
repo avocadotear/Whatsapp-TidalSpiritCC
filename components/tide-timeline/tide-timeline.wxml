@@ -1,0 +1,10 @@
+<view class="timeline">
+  <view class="timeline-item" wx:for="{{tides}}" wx:key="time">
+    <view class="timeline-dot {{item.type}}"></view>
+    <view class="timeline-content">
+      <text class="timeline-time">{{item.time}}</text>
+      <text class="timeline-height">{{item.height}}m</text>
+      <text class="timeline-type">{{item.type === 'high' ? '满潮' : '干潮'}}</text>
+    </view>
+  </view>
+</view>

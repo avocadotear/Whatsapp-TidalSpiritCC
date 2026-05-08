@@ -1,0 +1,117 @@
+page {
+  background-color: #0A1628;
+  color: #E8F0F2;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+  font-size: 28rpx;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+view, text, scroll-view {
+  box-sizing: border-box;
+}
+
+.container {
+  min-height: 100vh;
+  background-color: #0A1628;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.card {
+  background-color: #122A45;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.card-light {
+  background-color: #1A3A5C;
+  border-radius: 12rpx;
+  padding: 20rpx;
+}
+
+.text-primary { color: #E8F0F2; }
+.text-secondary { color: #8BA4B8; }
+.text-accent { color: #2D8B6F; }
+.text-warning { color: #E74C3C; }
+.text-highlight { color: #F5A623; }
+
+.bg-dark { background-color: #0A1628; }
+.bg-card { background-color: #122A45; }
+.bg-nav { background-color: #0D2B4E; }
+.bg-accent { background-color: #2D8B6F; }
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-1 { flex: 1; }
+.flex-wrap { flex-wrap: wrap; }
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: #2D8B6F;
+  color: #FFFFFF;
+  border-radius: 8rpx;
+  padding: 12rpx 24rpx;
+  font-size: 26rpx;
+  text-align: center;
+}
+
+.btn-danger {
+  background-color: #E74C3C;
+  color: #FFFFFF;
+  border-radius: 8rpx;
+  padding: 12rpx 24rpx;
+  font-size: 26rpx;
+  text-align: center;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 6rpx;
+}
+
+.tag-excellent { background-color: rgba(45, 139, 111, 0.3); color: #2D8B6F; }
+.tag-good { background-color: rgba(245, 166, 35, 0.3); color: #F5A623; }
+.tag-normal { background-color: rgba(139, 164, 184, 0.3); color: #8BA4B8; }
+.tag-bad { background-color: rgba(231, 76, 60, 0.3); color: #E74C3C; }
+
+.divider {
+  height: 1rpx;
+  background-color: rgba(139, 164, 184, 0.2);
+  margin: 16rpx 0;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #E8F0F2;
+  margin-bottom: 16rpx;
+}

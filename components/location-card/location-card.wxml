@@ -1,0 +1,38 @@
+<view class="location-card" bindtap="onTapCard">
+  <view class="card-header">
+    <view class="card-location">
+      <text class="province">{{region.province}}</text>
+      <text class="sep">-</text>
+      <text class="city">{{region.city}}</text>
+      <text class="sep">-</text>
+      <text class="name">{{region.name}}</text>
+      <text class="distance" wx:if="{{region.distance}}">[{{region.distance}}公里]</text>
+    </view>
+    <view class="report-btn" catchtap="onTapReport">潮报</view>
+  </view>
+
+  <view class="card-body" wx:if="{{tideInfo.tides && tideInfo.tides.length > 0}}">
+    <view class="tide-time-row">
+      <text class="label">{{mode === 'fishing' ? '最近钓鱼' : '最近赶海'}}时间：{{selectedDate}}</text>
+    </view>
+    <view class="tide-detail-row">
+      <view class="tide-times">
+        <text wx:for="{{tideInfo.tides}}" wx:key="time" class="tide-point">
+          {{item.type === 'high' ? '↑' : '↓'}}{{item.time}}({{item.height}}m)
+        </text>
+      </view>
+    </view>
+    <view class="card-footer">
+      <view class="rating {{tideInfo.ratingClass || 'normal'}}">
+        <text class="score">{{tideInfo.score || '--'}}%</text>
+        <text class="rating-text">{{tideInfo.rating || '--'}}</text>
+      </view>
+      <view class="type-tag">
+        <text>{{region.type === 'both' ? '赶海+钓鱼' : region.type === 'fishing' ? '钓鱼' : '赶海'}}</text>
+      </view>
+      <view class="countdown" wx:if="{{tideInfo.countdown}}">
+        <text>{{tideInfo.countdown}}</text>
+      </view>
+    </view>
+  </view>
+</view>

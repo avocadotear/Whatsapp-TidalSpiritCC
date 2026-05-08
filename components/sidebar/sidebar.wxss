@@ -1,0 +1,21 @@
+.sidebar {
+  width: 140rpx;
+  height: 100%;
+  background-color: #0D2B4E;
+}
+
+.sidebar-item {
+  padding: 24rpx 16rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #8BA4B8;
+  border-left: 4rpx solid transparent;
+  transition: all 0.2s;
+}
+
+.sidebar-item.active {
+  background-color: #1A3A5C;
+  color: #FFFFFF;
+  border-left-color: #2D8B6F;
+  font-weight: bold;
+}

@@ -1,0 +1,62 @@
+<scroll-view class="container" scroll-y>
+  <!-- User Banner -->
+  <view class="user-banner">
+    <view class="banner-bg"></view>
+    <view class="user-info">
+      <view class="avatar">
+        <text class="avatar-text">🌊</text>
+      </view>
+      <text class="user-name">{{userInfo.nickName}}</text>
+      <view class="user-meta">
+        <text class="user-id">{{userId}}</text>
+        <text class="user-note">注：无需登录可使用</text>
+      </view>
+      <text class="version">版本V{{version}}</text>
+    </view>
+  </view>
+
+  <!-- Menu Items -->
+  <view class="menu-section">
+    <view class="menu-item" bindtap="openSettings">
+      <text class="menu-icon">⚙️</text>
+      <text class="menu-text">设置</text>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <view class="menu-item">
+      <text class="menu-icon">🎬</text>
+      <text class="menu-text">观看视频广告获取VIP（更多潮汐天数）</text>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <view class="menu-item" bindtap="showHelp">
+      <text class="menu-icon">📖</text>
+      <text class="menu-text">潮汐表帮助文档</text>
+      <text class="menu-arrow">›</text>
+    </view>
+
+    <view class="menu-item" bindtap="showPrivacy">
+      <text class="menu-icon">🔒</text>
+      <text class="menu-text">查看隐私协议</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- Favorites -->
+  <view class="fav-section" wx:if="{{favorites.length > 0}}">
+    <text class="fav-title">我的收藏</text>
+    <view class="fav-list">
+      <view class="fav-item" wx:for="{{favorites}}" wx:key="id">
+        <view class="fav-info" data-id="{{item.id}}" bindtap="goToRegion">
+          <text class="fav-name">{{item.province}}-{{item.city}}-{{item.name}}</text>
+          <text class="fav-desc">{{item.desc}}</text>
+        </view>
+        <view class="fav-remove" data-id="{{item.id}}" catchtap="removeFavorite">
+          <text>取消</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-space"></view>
+</scroll-view>

@@ -1,0 +1,5 @@
+<view class="region-card" bindtap="onTap">
+  <text class="region-name">{{region.name}}</text>
+  <text class="region-city">{{region.province}}-{{region.city}}</text>
+  <text class="region-type">{{region.type === 'both' ? '赶海+钓鱼' : region.type === 'fishing' ? '钓鱼' : '赶海'}}</text>
+</view>

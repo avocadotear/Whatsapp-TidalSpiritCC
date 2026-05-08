@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "潮汐表",
+  "usingComponents": {
+    "tide-chart": "/components/tide-chart/tide-chart",
+    "weather-badge": "/components/weather-badge/weather-badge",
+    "moon-phase": "/components/moon-phase/moon-phase"
+  }
+}

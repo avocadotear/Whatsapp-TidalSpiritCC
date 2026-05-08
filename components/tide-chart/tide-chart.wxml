@@ -1,0 +1,8 @@
+<view class="chart-container">
+  <canvas
+    type="2d"
+    id="tideCanvas"
+    class="tide-canvas"
+    canvas-id="{{canvasId}}"
+  ></canvas>
+</view>
