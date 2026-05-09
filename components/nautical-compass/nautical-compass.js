@@ -9,7 +9,9 @@ Component({
 
   data: {
     suggestion: '',
-    waveDirection: '东南'
+    waveDirection: '东南',
+    heading: 0,
+    compassAvailable: false
   },
 
   observers: {
@@ -22,21 +24,50 @@ Component({
   lifetimes: {
     ready() {
       this._rotation = 0;
+      this._deviceHeading = 0;
       this._targetRotation = 0;
       this._animTimer = null;
+      this._compassStarted = false;
       this._generateSuggestion();
       setTimeout(() => {
         this.drawCompass();
         this._startRotation();
+        this._startCompass();
       }, 300);
     },
 
     detached() {
       if (this._animTimer) clearInterval(this._animTimer);
+      this._stopCompass();
     }
   },
 
   methods: {
+    _startCompass() {
+      const that = this;
+      wx.startCompass({
+        success() {
+          that._compassStarted = true;
+          that.setData({ compassAvailable: true });
+          wx.onCompassChange(function (res) {
+            that._deviceHeading = res.direction;
+            that.setData({ heading: Math.round(res.direction) });
+          });
+        },
+        fail() {
+          // Compass not available, use simulated rotation
+          that.setData({ compassAvailable: false });
+        }
+      });
+    },
+
+    _stopCompass() {
+      if (this._compassStarted) {
+        wx.stopCompass();
+        wx.offCompassChange();
+      }
+    },
+
     _generateSuggestion() {
       const { windDirection, windLevel, tideType } = this.data;
       const dirs = {
@@ -44,13 +75,9 @@ Component({
         '南风': '北', '西南风': '东北', '西风': '东', '西北风': '东南'
       };
 
-      // Parse wind level
       const levelNum = parseInt(windLevel) || 2;
-
-      // Determine opposite direction for suggestion
       const oppDir = dirs[windDirection] || '东';
 
-      // Wave direction typically 90° clockwise from wind
       const waveDirs = {
         '北风': '东北', '东北风': '东', '东风': '东南', '东南风': '南',
         '南风': '西南', '西南风': '西', '西风': '西北', '西北风': '北'
@@ -58,7 +85,6 @@ Component({
       const waveDir = waveDirs[windDirection] || '东南';
       this.setData({ waveDirection: waveDir });
 
-      // Set compass target rotation based on wind direction
       const angles = {
         '北风': 0, '东北风': 45, '东风': 90, '东南风': 135,
         '南风': 180, '西南风': 225, '西风': 270, '西北风': 315
@@ -81,9 +107,15 @@ Component({
 
     _startRotation() {
       this._animTimer = setInterval(() => {
-        this._rotation += 0.003;
+        if (this.data.compassAvailable) {
+          // When compass is active, the dial rotates opposite to heading
+          this._rotation = -this._deviceHeading * Math.PI / 180;
+        } else {
+          // Slow idle rotation when no compass
+          this._rotation += 0.003;
+        }
         this.drawCompass();
-      }, 60);
+      }, 50);
     },
 
     drawCompass() {
@@ -111,7 +143,7 @@ Component({
 
       ctx.clearRect(0, 0, size, size);
 
-      // Background circle with glass effect
+      // Background
       const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
       bgGrad.addColorStop(0, 'rgba(18, 42, 69, 0.9)');
       bgGrad.addColorStop(0.7, 'rgba(13, 30, 50, 0.95)');
@@ -121,7 +153,7 @@ Component({
       ctx.fillStyle = bgGrad;
       ctx.fill();
 
-      // Outer glow ring
+      // Outer glow
       ctx.save();
       ctx.shadowColor = 'rgba(45, 200, 160, 0.3)';
       ctx.shadowBlur = 15;
@@ -132,16 +164,19 @@ Component({
       ctx.stroke();
       ctx.restore();
 
-      // Inner decorative ring
+      // Inner ring
       ctx.beginPath();
       ctx.arc(cx, cy, r - 8, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(139, 164, 184, 0.2)';
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // Degree ticks
+      // The dial rotates — either by compass or idle animation
+      const dialRotation = this._rotation;
+
+      // Degree ticks — rotate with dial
       for (let i = 0; i < 360; i += 5) {
-        const angle = (i - 90) * Math.PI / 180 + this._rotation * 0.1;
+        const angle = (i - 90) * Math.PI / 180 + dialRotation;
         const isMajor = i % 90 === 0;
         const isMedium = i % 30 === 0;
         const tickLen = isMajor ? 12 : isMedium ? 8 : 4;
@@ -155,7 +190,7 @@ Component({
         ctx.stroke();
       }
 
-      // Direction labels (N/S/E/W)
+      // Direction labels rotate with dial
       const directions = [
         { label: 'N', angle: -90 },
         { label: 'E', angle: 0 },
@@ -168,7 +203,7 @@ Component({
       ctx.textBaseline = 'middle';
 
       directions.forEach(d => {
-        const angle = (d.angle) * Math.PI / 180 + this._rotation * 0.1;
+        const angle = d.angle * Math.PI / 180 + dialRotation;
         const labelR = r - 28;
         const x = cx + labelR * Math.cos(angle);
         const y = cy + labelR * Math.sin(angle);
@@ -177,42 +212,61 @@ Component({
         ctx.fillText(d.label, x, y);
       });
 
-      // Wind direction pointer
+      // Degree labels at 30° intervals
+      ctx.font = '8px sans-serif';
+      ctx.fillStyle = 'rgba(139, 164, 184, 0.5)';
+      for (let i = 0; i < 360; i += 30) {
+        if (i % 90 === 0) continue; // Skip cardinal directions
+        const angle = (i - 90) * Math.PI / 180 + dialRotation;
+        const labelR = r - 28;
+        const x = cx + labelR * Math.cos(angle);
+        const y = cy + labelR * Math.sin(angle);
+        ctx.fillText(`${i}`, x, y);
+      }
+
+      // Fixed pointer (always points up = north direction on screen)
       ctx.save();
       ctx.translate(cx, cy);
-      ctx.rotate(this._targetRotation + this._rotation * 0.1);
 
-      // Pointer arrow (metallic gradient)
-      const pointerGrad = ctx.createLinearGradient(0, -(r * 0.5), 0, r * 0.5);
-      pointerGrad.addColorStop(0, '#E74C3C');
-      pointerGrad.addColorStop(0.45, '#C0392B');
-      pointerGrad.addColorStop(0.5, '#8BA4B8');
-      pointerGrad.addColorStop(0.55, '#2D8B6F');
-      pointerGrad.addColorStop(1, '#2D8B6F');
-
-      // North pointer (red)
+      // North pointer (red, always up)
       ctx.beginPath();
       ctx.moveTo(0, -(r * 0.45));
-      ctx.lineTo(-6, 0);
-      ctx.lineTo(0, -4);
-      ctx.lineTo(6, 0);
+      ctx.lineTo(-6, -(r * 0.15));
+      ctx.lineTo(0, -(r * 0.2));
+      ctx.lineTo(6, -(r * 0.15));
       ctx.closePath();
       ctx.fillStyle = '#E74C3C';
       ctx.fill();
 
-      // South pointer (green)
+      // South pointer (green, always down)
       ctx.beginPath();
       ctx.moveTo(0, r * 0.45);
-      ctx.lineTo(-6, 0);
-      ctx.lineTo(0, 4);
-      ctx.lineTo(6, 0);
+      ctx.lineTo(-6, r * 0.15);
+      ctx.lineTo(0, r * 0.2);
+      ctx.lineTo(6, r * 0.15);
       ctx.closePath();
       ctx.fillStyle = '#2D8B6F';
       ctx.fill();
 
       ctx.restore();
 
-      // Center circle (metallic)
+      // Wind direction indicator (small arrow at edge, rotates with wind)
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(this._targetRotation);
+      ctx.beginPath();
+      ctx.moveTo(0, -(r * 0.62));
+      ctx.lineTo(-4, -(r * 0.55));
+      ctx.lineTo(0, -(r * 0.57));
+      ctx.lineTo(4, -(r * 0.55));
+      ctx.closePath();
+      ctx.fillStyle = '#F5A623';
+      ctx.globalAlpha = 0.7;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+
+      // Center circle
       const centerGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 8);
       centerGrad.addColorStop(0, '#8BA4B8');
       centerGrad.addColorStop(0.5, '#5A7A8A');
@@ -222,7 +276,6 @@ Component({
       ctx.fillStyle = centerGrad;
       ctx.fill();
 
-      // Center highlight
       ctx.beginPath();
       ctx.arc(cx - 2, cy - 2, 3, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';

@@ -29,11 +29,62 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 20rpx;
+  position: relative;
 }
 
 .bagua-canvas {
   width: 320rpx;
   height: 320rpx;
+}
+
+.tap-hint {
+  position: absolute;
+  bottom: 10rpx;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tap-hint-text {
+  font-size: 22rpx;
+  color: rgba(245, 200, 100, 0.6);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.calculating-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.calc-ring {
+  width: 60rpx;
+  height: 60rpx;
+  border: 3rpx solid rgba(245, 166, 35, 0.3);
+  border-top-color: #F5A623;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12rpx;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.calc-text {
+  font-size: 20rpx;
+  color: rgba(245, 200, 100, 0.8);
 }
 
 .factors-grid {
@@ -73,7 +124,31 @@
 .prediction-result {
   border-radius: 12rpx;
   padding: 20rpx;
-  text-align: center;
+}
+
+.prediction-result.pending {
+  background: rgba(139, 164, 184, 0.08);
+  border: 1rpx dashed rgba(139, 164, 184, 0.25);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+
+.result-level {
+  font-size: 40rpx;
+  font-weight: bold;
+}
+
+.result-retry {
+  font-size: 22rpx;
+  color: #F5A623;
+  padding: 6rpx 16rpx;
+  border: 1rpx solid rgba(245, 166, 35, 0.3);
+  border-radius: 16rpx;
 }
 
 .prediction-result.excellent {
@@ -96,27 +171,11 @@
   border: 1rpx solid rgba(231, 76, 60, 0.25);
 }
 
-.result-level {
-  font-size: 40rpx;
-  font-weight: bold;
-  margin-bottom: 10rpx;
-}
-
-.prediction-result.excellent .result-level {
-  color: #2DD4AA;
-}
-
-.prediction-result.good .result-level {
-  color: #F5A623;
-}
-
-.prediction-result.normal .result-level {
-  color: #8BA4B8;
-}
-
-.prediction-result.bad .result-level {
-  color: #E74C3C;
-}
+.prediction-result.excellent .result-level { color: #2DD4AA; }
+.prediction-result.good .result-level { color: #F5A623; }
+.prediction-result.normal .result-level { color: #8BA4B8; }
+.prediction-result.bad .result-level { color: #E74C3C; }
+.prediction-result.pending .result-level { color: #8BA4B8; font-size: 28rpx; }
 
 .result-text {
   font-size: 22rpx;
