@@ -6,7 +6,10 @@
       <view class="header-location">
         <text class="location-name">{{region.city}}·{{region.name}}</text>
         <text class="header-date">{{selectedDate}} 农历{{lunar.dayStr}} {{lunar.weekDay}}</text>
-        <text class="header-attr">{{attribute.tideType}}({{attribute.tidePeriod}})</text>
+        <view class="header-attr-row">
+          <text class="header-attr">{{attribute.tideType}}({{attribute.tidePeriod}})</text>
+          <text class="real-data-badge" wx:if="{{hasRealData}}">实测数据</text>
+        </view>
       </view>
       <view class="fav-btn" bindtap="toggleFavorite">
         <text>{{isFavorite ? '★' : '☆'}}</text>
@@ -21,8 +24,8 @@
   <!-- Tide Chart -->
   <view class="chart-section">
     <view class="chart-header">
-      <text class="chart-title">潮汐刻度：10分钟</text>
-      <text class="chart-info">潮高：{{tides[0].height || '--'}}m</text>
+      <text class="chart-title">潮汐曲线</text>
+      <text class="chart-info">支持拖动 · 缩放 · 长按查看</text>
     </view>
     <tide-chart
       tides="{{tides}}"
@@ -31,6 +34,9 @@
       sunrise="{{sunrise}}"
       sunset="{{sunset}}"
       mode="{{mode}}"
+      windDirection="{{windDirection}}"
+      windLevel="{{windLevel}}"
+      tideType="{{attribute.tideType}}"
     />
   </view>
 
@@ -160,6 +166,31 @@
         <text class="env-value">{{environmental.windSpeed}}</text>
       </view>
     </view>
+  </view>
+
+  <!-- Nautical Compass -->
+  <view class="section component-section">
+    <nautical-compass
+      windDirection="{{windDirection}}"
+      windLevel="{{windLevel}}"
+      windSpeed="{{environmental.windSpeed}}"
+      waveHeight="{{waveHeight}}"
+      tideType="{{attribute.tideType}}"
+    />
+  </view>
+
+  <!-- Bagua Calculator -->
+  <view class="section component-section">
+    <bagua-calculator
+      tideType="{{attribute.tideType}}"
+      moonPhase="{{moonPhase.phase}}"
+      moonIcon="{{moonPhase.icon}}"
+      windLevel="{{windLevel}}"
+      waveHeight="{{waveHeight}}"
+      windDirection="{{windDirection}}"
+      lunarDay="{{attribute.dayStr}}"
+      tideHeight="{{tides[0].height}}"
+    />
   </view>
 
   <!-- Disclaimer -->

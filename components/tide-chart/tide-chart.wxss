@@ -1,12 +1,88 @@
 .chart-container {
   width: 100%;
-  height: 400rpx;
+  height: 450rpx;
   background-color: #0A1628;
   border-radius: 12rpx;
   overflow: hidden;
+  position: relative;
 }
 
 .tide-canvas {
   width: 100%;
   height: 100%;
+}
+
+.tooltip {
+  position: absolute;
+  top: 8rpx;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10rpx);
+  background: rgba(13, 43, 78, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1rpx solid rgba(45, 200, 160, 0.3);
+  border-radius: 12rpx;
+  padding: 12rpx 20rpx;
+  min-width: 320rpx;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.4), 0 0 20rpx rgba(45, 200, 160, 0.1);
+}
+
+.tooltip.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4rpx;
+}
+
+.tooltip-row:last-child {
+  margin-bottom: 0;
+}
+
+.tooltip-time {
+  font-size: 26rpx;
+  color: #2DD4AA;
+  font-weight: bold;
+}
+
+.tooltip-height {
+  font-size: 26rpx;
+  color: #FFFFFF;
+  font-weight: bold;
+}
+
+.tooltip-label {
+  font-size: 20rpx;
+  color: #8BA4B8;
+}
+
+.tooltip-value {
+  font-size: 20rpx;
+  color: #E8F0F2;
+  font-weight: bold;
+}
+
+.tooltip-value.excellent {
+  color: #2D8B6F;
+}
+
+.tooltip-value.good {
+  color: #F5A623;
+}
+
+.tooltip-value.bad {
+  color: #E74C3C;
+}
+
+.tooltip-sea {
+  font-size: 18rpx;
+  color: #8BA4B8;
+  line-height: 1.4;
 }

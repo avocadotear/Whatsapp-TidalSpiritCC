@@ -4,5 +4,27 @@
     id="tideCanvas"
     class="tide-canvas"
     canvas-id="{{canvasId}}"
+    bindtouchstart="onTouchStart"
+    bindtouchmove="onTouchMove"
+    bindtouchend="onTouchEnd"
   ></canvas>
+
+  <!-- Tooltip overlay -->
+  <view class="tooltip {{showTooltip ? 'show' : ''}}" wx:if="{{showTooltip}}">
+    <view class="tooltip-row">
+      <text class="tooltip-time">{{tooltipTime}}</text>
+      <text class="tooltip-height">{{tooltipHeight}}</text>
+    </view>
+    <view class="tooltip-row">
+      <text class="tooltip-label">趋势：</text>
+      <text class="tooltip-value">{{tooltipTrend}}</text>
+    </view>
+    <view class="tooltip-row">
+      <text class="tooltip-label">赶海：</text>
+      <text class="tooltip-value {{tooltipAdvice === '非常适合' ? 'excellent' : tooltipAdvice === '适合' ? 'good' : 'bad'}}">{{tooltipAdvice}}</text>
+    </view>
+    <view class="tooltip-row">
+      <text class="tooltip-sea">{{tooltipSeaState}}</text>
+    </view>
+  </view>
 </view>

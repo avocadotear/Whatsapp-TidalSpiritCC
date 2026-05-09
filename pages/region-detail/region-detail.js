@@ -1,7 +1,7 @@
 const regionService = require('../../services/region');
 const tideService = require('../../services/tide');
 const { toLunar, formatDate } = require('../../utils/date');
-const { getTideAttribute } = require('../../utils/tide-calc');
+const { getTideAttribute, getMoonPhase } = require('../../utils/tide-calc');
 
 Page({
   data: {
@@ -22,7 +22,11 @@ Page({
     sunset: '',
     dates: [],
     isFavorite: false,
-    showTideTable: false
+    showTideTable: false,
+    hasRealData: false,
+    windDirection: '',
+    windLevel: '',
+    waveHeight: ''
   },
 
   onLoad(options) {
@@ -61,6 +65,7 @@ Page({
     const date = new Date(selectedDate);
     const fullData = tideService.getFullTideData(region.id, date, mode);
     const lunar = toLunar(date);
+    const moonPhase = getMoonPhase(date);
 
     this.setData({
       tides: fullData.tides,
@@ -73,8 +78,12 @@ Page({
       sunrise: fullData.sunrise,
       sunset: fullData.sunset,
       attribute: fullData.attribute,
-      moonPhase: fullData.moonPhase,
-      lunar
+      moonPhase,
+      lunar,
+      hasRealData: fullData.hasRealData,
+      windDirection: fullData.windDirection || '',
+      windLevel: fullData.windLevel || '',
+      waveHeight: fullData.waveHeight || ''
     });
   },
 

@@ -1,0 +1,35 @@
+<view class="compass-section">
+  <view class="compass-title-bar">
+    <text class="compass-icon-text">🧭</text>
+    <text class="compass-title">航海指南针</text>
+  </view>
+
+  <view class="compass-canvas-wrap">
+    <canvas
+      type="2d"
+      id="compassCanvas"
+      class="compass-canvas"
+    ></canvas>
+  </view>
+
+  <view class="compass-info">
+    <view class="info-row">
+      <view class="info-item">
+        <text class="info-label">风向</text>
+        <text class="info-value wind">{{windDirection || '东北风'}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">风力</text>
+        <text class="info-value">{{windLevel || '2级'}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">浪向</text>
+        <text class="info-value">{{waveDirection || '东南'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="compass-suggestion">
+    <text class="suggestion-text">{{suggestion}}</text>
+  </view>
+</view>

@@ -1,0 +1,27 @@
+<view class="bagua-section">
+  <view class="bagua-title-bar">
+    <text class="bagua-icon-text">☯</text>
+    <text class="bagua-title">八卦算盘 · 赶海预测</text>
+  </view>
+
+  <view class="bagua-canvas-wrap">
+    <canvas
+      type="2d"
+      id="baguaCanvas"
+      class="bagua-canvas"
+    ></canvas>
+  </view>
+
+  <view class="factors-grid">
+    <view class="factor-item" wx:for="{{factors}}" wx:key="label">
+      <text class="factor-icon">{{item.icon}}</text>
+      <text class="factor-label">{{item.label}}</text>
+      <text class="factor-value">{{item.value}}</text>
+    </view>
+  </view>
+
+  <view class="prediction-result {{resultClass}}">
+    <view class="result-level">{{resultLevel}}</view>
+    <view class="result-text">{{resultText}}</view>
+  </view>
+</view>

@@ -3,6 +3,8 @@
   "usingComponents": {
     "tide-chart": "/components/tide-chart/tide-chart",
     "weather-badge": "/components/weather-badge/weather-badge",
-    "moon-phase": "/components/moon-phase/moon-phase"
+    "moon-phase": "/components/moon-phase/moon-phase",
+    "nautical-compass": "/components/nautical-compass/nautical-compass",
+    "bagua-calculator": "/components/bagua-calculator/bagua-calculator"
   }
 }
