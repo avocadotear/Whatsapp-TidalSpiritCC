@@ -14,15 +14,14 @@
 .tooltip {
   position: absolute;
   top: 8rpx;
-  left: 50%;
-  transform: translateX(-50%) translateY(-10rpx);
   background: rgba(10, 22, 40, 0.92);
   border: 1rpx solid rgba(245, 166, 35, 0.35);
   border-radius: 10rpx;
   padding: 12rpx 20rpx;
-  min-width: 340rpx;
+  min-width: 280rpx;
+  max-width: 360rpx;
   opacity: 0;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.2s ease;
   pointer-events: none;
   z-index: 10;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.4);
@@ -30,7 +29,6 @@
 
 .tooltip.show {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
 }
 
 .tooltip-row {

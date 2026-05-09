@@ -9,7 +9,7 @@
     bindtouchend="onTouchEnd"
   ></canvas>
 
-  <view class="tooltip {{showTooltip ? 'show' : ''}}" wx:if="{{showTooltip}}">
+  <view class="tooltip {{showTooltip ? 'show' : ''}}" wx:if="{{showTooltip}}" style="{{tooltipStyle}}">
     <view class="tooltip-row">
       <text class="tooltip-time">{{tooltipTime}}</text>
       <text class="tooltip-height">{{tooltipHeight}}</text>

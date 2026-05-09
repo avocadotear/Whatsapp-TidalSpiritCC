@@ -18,12 +18,14 @@ Component({
     tooltipHeight: '',
     tooltipTrend: '',
     tooltipAdvice: '',
-    tooltipSeaState: ''
+    tooltipSeaState: '',
+    tooltipStyle: ''
   },
 
   observers: {
     'curve, tides, mode'() {
       if (this.data.curve.length > 0) {
+        this._updateMaxH();
         setTimeout(() => this.drawChart(), 100);
       }
     }
@@ -31,43 +33,73 @@ Component({
 
   lifetimes: {
     ready() {
-      this._offsetX = 0;
-      this._scaleX = 1;
-      this._touchStartX = 0;
-      this._touchStartY = 0;
-      this._lastMoveX = 0;
-      this._velocity = 0;
-      this._isDragging = false;
-      this._isPinching = false;
-      this._pinchStartDist = 0;
-      this._pinchStartScale = 1;
       this._breathPhase = 0;
       this._breathTimer = null;
-      this._animFrameId = null;
       this._dragMinute = -1;
       this._hideTimer = null;
       this._canvasWidth = 0;
+      this._canvasHeight = 0;
+      this._cachedCanvas = null;
+      this._cachedCtx = null;
+      this._dpr = wx.getWindowInfo().pixelRatio;
       this._padding = { top: 30, right: 50, bottom: 30, left: 40 };
+      this._maxH = 6;
+      this._hasVibrated = false;
 
+      this._updateMaxH();
       if (this.data.curve.length > 0) {
-        setTimeout(() => this.drawChart(), 300);
+        setTimeout(() => {
+          this._initCanvas();
+          this._startBreathAnimation();
+        }, 300);
+      } else {
+        this._startBreathAnimation();
       }
-      this._startBreathAnimation();
     },
 
     detached() {
       if (this._breathTimer) clearInterval(this._breathTimer);
-      if (this._animFrameId) cancelAnimationFrame(this._animFrameId);
       if (this._hideTimer) clearTimeout(this._hideTimer);
     }
   },
 
   methods: {
+    _updateMaxH() {
+      const curve = this.data.curve;
+      if (!curve.length) { this._maxH = 6; return; }
+      let maxVal = 0;
+      for (const p of curve) {
+        if (p.height > maxVal) maxVal = p.height;
+      }
+      const tides = this.data.tides;
+      for (const t of tides) {
+        if (t.height > maxVal) maxVal = t.height;
+      }
+      this._maxH = Math.ceil(maxVal + 0.5);
+      if (this._maxH < 2) this._maxH = 2;
+    },
+
+    _initCanvas() {
+      const query = this.createSelectorQuery();
+      query.select('#tideCanvas')
+        .fields({ node: true, size: true })
+        .exec((res) => {
+          if (!res[0]) return;
+          this._cachedCanvas = res[0].node;
+          this._cachedCtx = this._cachedCanvas.getContext('2d');
+          this._canvasWidth = res[0].width;
+          this._canvasHeight = res[0].height;
+          this._cachedCanvas.width = res[0].width * this._dpr;
+          this._cachedCanvas.height = res[0].height * this._dpr;
+          this.drawChart();
+        });
+    },
+
     _startBreathAnimation() {
       this._breathTimer = setInterval(() => {
         this._breathPhase += 0.05;
         if (this._breathPhase > Math.PI * 2) this._breathPhase -= Math.PI * 2;
-        if (this.data.curve.length > 0) {
+        if (this._cachedCtx && this.data.curve.length > 0) {
           this.drawChart();
         }
       }, 80);
@@ -75,61 +107,26 @@ Component({
 
     onTouchStart(e) {
       if (this._hideTimer) { clearTimeout(this._hideTimer); this._hideTimer = null; }
+      if (e.touches.length !== 1) return;
 
-      if (e.touches.length === 1) {
-        this._touchStartX = e.touches[0].x;
-        this._touchStartY = e.touches[0].y;
-        this._lastMoveX = e.touches[0].x;
-        this._isDragging = false;
-        this._velocity = 0;
-      } else if (e.touches.length === 2) {
-        this._isPinching = true;
-        const dx = e.touches[1].x - e.touches[0].x;
-        const dy = e.touches[1].y - e.touches[0].y;
-        this._pinchStartDist = Math.sqrt(dx * dx + dy * dy);
-        this._pinchStartScale = this._scaleX;
+      // Haptic feedback on first touch
+      if (!this._hasVibrated) {
+        this._hasVibrated = true;
+        wx.vibrateShort({ type: 'light' });
       }
+
+      const touchX = e.touches[0].x;
+      this._updateDragAt(touchX);
+      this.drawChart();
     },
 
     onTouchMove(e) {
-      if (e.touches.length === 1 && !this._isPinching) {
-        const dx = e.touches[0].x - this._touchStartX;
-        const dy = e.touches[0].y - this._touchStartY;
-
-        if (!this._isDragging && Math.abs(dx) > 8) {
-          this._isDragging = true;
-        }
-
-        if (this._isDragging) {
-          const moveX = e.touches[0].x - this._lastMoveX;
-          this._velocity = moveX;
-          this._offsetX += moveX;
-          this._lastMoveX = e.touches[0].x;
-          // Update drag point to finger position
-          this._updateDragAt(e.touches[0].x);
-          this.drawChart();
-        } else if (Math.abs(dy) < 20 && Math.abs(dx) < 8) {
-          // Finger is relatively still — show info at this point
-          this._updateDragAt(e.touches[0].x);
-          this.drawChart();
-        }
-      } else if (e.touches.length === 2 && this._isPinching) {
-        const dx = e.touches[1].x - e.touches[0].x;
-        const dy = e.touches[1].y - e.touches[0].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const ratio = dist / this._pinchStartDist;
-        this._scaleX = Math.max(1, Math.min(5, this._pinchStartScale * ratio));
-        this.drawChart();
-      }
+      if (e.touches.length !== 1) return;
+      this._updateDragAt(e.touches[0].x);
+      this.drawChart();
     },
 
     onTouchEnd() {
-      if (this._isDragging) {
-        this._startInertia();
-      }
-      this._isPinching = false;
-
-      // Auto hide tooltip after 3s
       this._hideTimer = setTimeout(() => {
         this.setData({ showTooltip: false });
         this._dragMinute = -1;
@@ -141,17 +138,14 @@ Component({
       const p = this._padding;
       const chartW = this._canvasWidth - p.left - p.right;
       if (chartW <= 0) return;
-      const scaledW = chartW * this._scaleX;
-      const adjustedX = touchX - p.left - this._offsetX;
-      const minute = Math.round((adjustedX / scaledW) * 1440);
 
+      const minute = Math.round(((touchX - p.left) / chartW) * 1440);
       if (minute < 0 || minute > 1440) return;
       this._dragMinute = minute;
 
       const { curve, tides } = this.data;
       if (!curve.length) return;
 
-      // Find closest curve point
       let closest = curve[0];
       let minDist = Infinity;
       for (const pt of curve) {
@@ -192,45 +186,35 @@ Component({
         advice = '不建议';
       }
 
+      // Tooltip position: flip based on which half of screen
+      const midX = this._canvasWidth / 2;
+      let tooltipStyle;
+      if (touchX < midX) {
+        tooltipStyle = `left: ${touchX + 20}px; right: auto;`;
+      } else {
+        tooltipStyle = `right: ${this._canvasWidth - touchX + 20}px; left: auto;`;
+      }
+
       this.setData({
         showTooltip: true,
         tooltipTime: closest.time,
         tooltipHeight: closest.height.toFixed(1) + 'm',
         tooltipTrend: trend,
         tooltipAdvice: advice,
-        tooltipSeaState: seaState + (nextEvent ? '  ' + nextEvent : '')
+        tooltipSeaState: seaState + (nextEvent ? '  ' + nextEvent : ''),
+        tooltipStyle
       });
     },
 
-    _startInertia() {
-      const decay = () => {
-        if (Math.abs(this._velocity) < 0.5) return;
-        this._offsetX += this._velocity;
-        this._velocity *= 0.92;
-        this.drawChart();
-        this._animFrameId = requestAnimationFrame(decay);
-      };
-      this._animFrameId = requestAnimationFrame(decay);
-    },
-
     drawChart() {
-      const query = this.createSelectorQuery();
-      query.select('#tideCanvas')
-        .fields({ node: true, size: true })
-        .exec((res) => {
-          if (!res[0]) return;
-          const canvas = res[0].node;
-          const ctx = canvas.getContext('2d');
-          const dpr = wx.getWindowInfo().pixelRatio;
-          const width = res[0].width;
-          const height = res[0].height;
-          canvas.width = width * dpr;
-          canvas.height = height * dpr;
-          ctx.scale(dpr, dpr);
+      const ctx = this._cachedCtx;
+      if (!ctx) return;
+      const w = this._canvasWidth;
+      const h = this._canvasHeight;
+      if (w <= 0 || h <= 0) return;
 
-          this._canvasWidth = width;
-          this.renderChart(ctx, width, height);
-        });
+      ctx.setTransform(this._dpr, 0, 0, this._dpr, 0, 0);
+      this.renderChart(ctx, w, h);
     },
 
     renderChart(ctx, w, h) {
@@ -238,10 +222,11 @@ Component({
       const padding = this._padding;
       const chartW = w - padding.left - padding.right;
       const chartH = h - padding.top - padding.bottom;
-      const scaledW = chartW * this._scaleX;
+      const maxH = this._maxH;
 
       ctx.clearRect(0, 0, w, h);
 
+      // Background
       const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
       bgGrad.addColorStop(0, '#0A1628');
       bgGrad.addColorStop(0.5, '#0D1F35');
@@ -256,11 +241,10 @@ Component({
       ctx.rect(padding.left, 0, chartW, h);
       ctx.clip();
 
-      const toX = (min) => padding.left + (min / 1440) * scaledW + this._offsetX;
-      const maxH = 6;
+      const toX = (min) => padding.left + (min / 1440) * chartW;
       const toY = (val) => padding.top + (1 - val / maxH) * chartH;
 
-      this.drawGrid(ctx, padding, scaledW, chartH, maxH, toX, toY, w);
+      this.drawGrid(ctx, padding, chartW, chartH, maxH, toX, toY);
       this.drawDayNightFill(ctx, curve, sunrise, sunset, toX, toY, h, padding);
       this.drawTideCurve(ctx, curve, toX, toY);
 
@@ -271,16 +255,15 @@ Component({
       this.drawPeakMarkers(ctx, tides, toX, toY);
       this.drawCurrentTimeGlow(ctx, curve, toX, toY, padding, h);
 
-      // Draw drag crosshair
       if (this._dragMinute >= 0 && curve.length) {
-        this.drawDragCrosshair(ctx, curve, toX, toY, padding, h);
+        this.drawDragCrosshair(ctx, curve, toX, toY, padding, w, h);
       }
 
       ctx.restore();
       this.drawLegend(ctx, w, h, mode);
     },
 
-    drawDragCrosshair(ctx, curve, toX, toY, padding, h) {
+    drawDragCrosshair(ctx, curve, toX, toY, padding, w, h) {
       const minute = this._dragMinute;
 
       let closest = curve[0];
@@ -302,11 +285,11 @@ Component({
       ctx.lineTo(x, h - padding.bottom);
       ctx.stroke();
 
-      // Horizontal guide line
+      // Horizontal guide line — fixed: was using h instead of w
       ctx.strokeStyle = 'rgba(245, 166, 35, 0.3)';
       ctx.beginPath();
       ctx.moveTo(padding.left, y);
-      ctx.lineTo(h, y);
+      ctx.lineTo(w - padding.right, y);
       ctx.stroke();
 
       // Glow dot on curve
@@ -331,15 +314,14 @@ Component({
       ctx.textAlign = 'center';
       ctx.fillStyle = '#F5A623';
 
-      // Background pill for label
+      // Background pill for label (manual roundRect for compatibility)
       const label = `${closest.time}  ${closest.height.toFixed(1)}m`;
       const tw = ctx.measureText(label).width + 12;
       const lx = x - tw / 2;
-      const ly = y - 28;
+      const ly = y - 30;
 
       ctx.fillStyle = 'rgba(10, 22, 40, 0.85)';
-      ctx.beginPath();
-      ctx.roundRect(lx, ly, tw, 18, 4);
+      this._roundRect(ctx, lx, ly, tw, 18, 4);
       ctx.fill();
       ctx.strokeStyle = 'rgba(245, 166, 35, 0.5)';
       ctx.lineWidth = 1;
@@ -348,6 +330,20 @@ Component({
       ctx.fillStyle = '#F5A623';
       ctx.fillText(label, x, ly + 13);
       ctx.textAlign = 'start';
+    },
+
+    _roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.arc(x + w - r, y + r, r, -Math.PI / 2, 0);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.arc(x + w - r, y + h - r, r, 0, Math.PI / 2);
+      ctx.lineTo(x + r, y + h);
+      ctx.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI);
+      ctx.lineTo(x, y + r);
+      ctx.arc(x + r, y + r, r, Math.PI, Math.PI * 1.5);
+      ctx.closePath();
     },
 
     drawSeaFog(ctx, w, h) {
@@ -365,9 +361,8 @@ Component({
       ctx.fillRect(0, 0, w, h);
     },
 
-    drawGrid(ctx, padding, chartW, chartH, maxH, toX, toY, totalW) {
+    drawGrid(ctx, padding, chartW, chartH, maxH, toX, toY) {
       ctx.font = '10px sans-serif';
-      ctx.fillStyle = 'rgba(139, 164, 184, 0.6)';
 
       for (let i = 0; i <= maxH; i++) {
         const y = toY(i);
@@ -377,23 +372,22 @@ Component({
         ctx.moveTo(padding.left, y);
         ctx.lineTo(padding.left + chartW, y);
         ctx.stroke();
+        ctx.fillStyle = 'rgba(139, 164, 184, 0.6)';
         ctx.fillText(`${i}`, padding.left - 18, y + 4);
       }
 
       for (let hour = 0; hour <= 24; hour++) {
         const x = toX(hour * 60);
-        if (x >= padding.left - 5 && x <= totalW - padding.right + 5) {
-          const isMajor = hour % 3 === 0;
-          ctx.strokeStyle = isMajor ? 'rgba(139, 164, 184, 0.15)' : 'rgba(139, 164, 184, 0.05)';
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(x, padding.top);
-          ctx.lineTo(x, padding.top + chartH);
-          ctx.stroke();
-          if (isMajor) {
-            ctx.fillStyle = 'rgba(139, 164, 184, 0.6)';
-            ctx.fillText(`${hour}:00`, x - 12, padding.top + chartH + 16);
-          }
+        const isMajor = hour % 3 === 0;
+        ctx.strokeStyle = isMajor ? 'rgba(139, 164, 184, 0.15)' : 'rgba(139, 164, 184, 0.05)';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(x, padding.top);
+        ctx.lineTo(x, padding.top + chartH);
+        ctx.stroke();
+        if (isMajor) {
+          ctx.fillStyle = 'rgba(139, 164, 184, 0.6)';
+          ctx.fillText(`${hour}:00`, x - 12, padding.top + chartH + 16);
         }
       }
     },
@@ -406,7 +400,7 @@ Component({
       const nightCurve2 = curve.filter(p => p.minute > sunsetMin);
 
       if (dayCurve.length > 1) {
-        const grad = ctx.createLinearGradient(0, toY(6), 0, toY(0));
+        const grad = ctx.createLinearGradient(0, toY(this._maxH), 0, toY(0));
         grad.addColorStop(0, 'rgba(45, 180, 140, 0.08)');
         grad.addColorStop(0.5, 'rgba(30, 120, 100, 0.12)');
         grad.addColorStop(1, 'rgba(20, 80, 70, 0.05)');
@@ -437,6 +431,7 @@ Component({
       if (curve.length < 2) return;
       const breathAlpha = 0.5 + Math.sin(this._breathPhase) * 0.15;
 
+      // Fill area
       ctx.beginPath();
       ctx.moveTo(toX(curve[0].minute), toY(0));
       for (let i = 0; i < curve.length; i++) {
@@ -445,13 +440,14 @@ Component({
       ctx.lineTo(toX(curve[curve.length - 1].minute), toY(0));
       ctx.closePath();
 
-      const fillGrad = ctx.createLinearGradient(0, toY(6), 0, toY(0));
+      const fillGrad = ctx.createLinearGradient(0, toY(this._maxH), 0, toY(0));
       fillGrad.addColorStop(0, `rgba(45, 200, 160, ${breathAlpha * 0.15})`);
       fillGrad.addColorStop(0.4, `rgba(30, 140, 120, ${breathAlpha * 0.1})`);
       fillGrad.addColorStop(1, 'rgba(20, 80, 70, 0.02)');
       ctx.fillStyle = fillGrad;
       ctx.fill();
 
+      // Main stroke with glow
       ctx.save();
       ctx.shadowColor = `rgba(45, 200, 160, ${breathAlpha * 0.6})`;
       ctx.shadowBlur = 8 + Math.sin(this._breathPhase) * 3;
@@ -478,6 +474,7 @@ Component({
       ctx.stroke();
       ctx.restore();
 
+      // Bloom/glow layer
       ctx.save();
       ctx.globalAlpha = 0.15;
       ctx.strokeStyle = '#2D9B7F';
