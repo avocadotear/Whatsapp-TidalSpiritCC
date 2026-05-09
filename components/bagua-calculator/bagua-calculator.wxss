@@ -13,10 +13,6 @@
   margin-bottom: 20rpx;
 }
 
-.bagua-icon-text {
-  font-size: 36rpx;
-}
-
 .bagua-title {
   font-size: 30rpx;
   font-weight: bold;
@@ -33,13 +29,13 @@
 }
 
 .bagua-canvas {
-  width: 320rpx;
-  height: 320rpx;
+  width: 340rpx;
+  height: 340rpx;
 }
 
 .tap-hint {
   position: absolute;
-  bottom: 10rpx;
+  bottom: 20rpx;
   left: 50%;
   transform: translateX(-50%);
 }
@@ -51,7 +47,7 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.6; }
+  0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }
 }
 
@@ -69,12 +65,12 @@
 }
 
 .calc-ring {
-  width: 60rpx;
-  height: 60rpx;
-  border: 3rpx solid rgba(245, 166, 35, 0.3);
+  width: 50rpx;
+  height: 50rpx;
+  border: 3rpx solid rgba(245, 166, 35, 0.25);
   border-top-color: #F5A623;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.7s linear infinite;
   margin-bottom: 12rpx;
 }
 
@@ -90,24 +86,20 @@
 .factors-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
+  gap: 10rpx;
   margin-bottom: 20rpx;
 }
 
 .factor-item {
-  width: calc(33.33% - 8rpx);
+  width: calc(33.33% - 7rpx);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 10rpx 4rpx;
-  background: rgba(245, 166, 35, 0.06);
-  border: 1rpx solid rgba(245, 166, 35, 0.12);
-  border-radius: 10rpx;
+  background: rgba(245, 166, 35, 0.05);
+  border: 1rpx solid rgba(245, 166, 35, 0.1);
+  border-radius: 8rpx;
   gap: 4rpx;
-}
-
-.factor-icon {
-  font-size: 24rpx;
 }
 
 .factor-label {
@@ -121,25 +113,32 @@
   font-weight: bold;
 }
 
+/* Prediction result */
 .prediction-result {
   border-radius: 12rpx;
   padding: 20rpx;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8rpx); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .prediction-result.pending {
-  background: rgba(139, 164, 184, 0.08);
-  border: 1rpx dashed rgba(139, 164, 184, 0.25);
+  background: rgba(139, 164, 184, 0.06);
+  border: 1rpx dashed rgba(139, 164, 184, 0.2);
 }
 
 .result-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10rpx;
+  margin-bottom: 12rpx;
 }
 
 .result-level {
-  font-size: 40rpx;
+  font-size: 44rpx;
   font-weight: bold;
 }
 
@@ -152,33 +151,77 @@
 }
 
 .prediction-result.excellent {
-  background: linear-gradient(135deg, rgba(45, 200, 160, 0.15), rgba(45, 139, 111, 0.1));
+  background: linear-gradient(135deg, rgba(45, 200, 160, 0.12), rgba(45, 139, 111, 0.08));
   border: 1rpx solid rgba(45, 200, 160, 0.3);
 }
+.prediction-result.excellent .result-level { color: #2DD4AA; }
 
 .prediction-result.good {
-  background: linear-gradient(135deg, rgba(245, 166, 35, 0.12), rgba(245, 166, 35, 0.06));
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.1), rgba(245, 166, 35, 0.05));
   border: 1rpx solid rgba(245, 166, 35, 0.25);
 }
+.prediction-result.good .result-level { color: #F5A623; }
 
 .prediction-result.normal {
-  background: linear-gradient(135deg, rgba(139, 164, 184, 0.12), rgba(139, 164, 184, 0.06));
+  background: linear-gradient(135deg, rgba(139, 164, 184, 0.1), rgba(139, 164, 184, 0.05));
   border: 1rpx solid rgba(139, 164, 184, 0.25);
 }
+.prediction-result.normal .result-level { color: #8BA4B8; }
 
 .prediction-result.bad {
-  background: linear-gradient(135deg, rgba(231, 76, 60, 0.12), rgba(231, 76, 60, 0.06));
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(231, 76, 60, 0.05));
   border: 1rpx solid rgba(231, 76, 60, 0.25);
 }
-
-.prediction-result.excellent .result-level { color: #2DD4AA; }
-.prediction-result.good .result-level { color: #F5A623; }
-.prediction-result.normal .result-level { color: #8BA4B8; }
 .prediction-result.bad .result-level { color: #E74C3C; }
+
 .prediction-result.pending .result-level { color: #8BA4B8; font-size: 28rpx; }
 
-.result-text {
+.result-verdict {
+  font-size: 24rpx;
+  color: #E8F0F2;
+  line-height: 1.6;
+  margin-bottom: 14rpx;
+  padding: 12rpx;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8rpx;
+  font-style: italic;
+}
+
+.result-detail {
+  margin-bottom: 12rpx;
+}
+
+.detail-label {
+  display: block;
+  font-size: 20rpx;
+  color: #F5D89A;
+  font-weight: bold;
+  margin-bottom: 4rpx;
+}
+
+.detail-text {
   font-size: 22rpx;
   color: #8BA4B8;
-  line-height: 1.6;
+  line-height: 1.5;
+}
+
+.result-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  padding: 8rpx 0;
+  border-top: 1rpx solid rgba(139, 164, 184, 0.08);
+}
+
+.info-label {
+  font-size: 20rpx;
+  color: #5A7A8A;
+  white-space: nowrap;
+  min-width: 110rpx;
+}
+
+.info-value {
+  font-size: 20rpx;
+  color: #8BA4B8;
+  line-height: 1.5;
 }

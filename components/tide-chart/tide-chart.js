@@ -18,17 +18,12 @@ Component({
     tooltipHeight: '',
     tooltipTrend: '',
     tooltipAdvice: '',
-    tooltipSeaState: '',
-    selectedHour: -1,
-    selectedHourDisplay: '',
-    hourItems: [],
-    snapIndex: -1
+    tooltipSeaState: ''
   },
 
   observers: {
     'curve, tides, mode'() {
       if (this.data.curve.length > 0) {
-        this._buildHourItems();
         setTimeout(() => this.drawChart(), 100);
       }
     }
@@ -46,19 +41,15 @@ Component({
       this._isPinching = false;
       this._pinchStartDist = 0;
       this._pinchStartScale = 1;
-      this._longPressTimer = null;
       this._breathPhase = 0;
       this._breathTimer = null;
       this._animFrameId = null;
-      this._selectedMinute = -1;
+      this._dragMinute = -1;
+      this._hideTimer = null;
+      this._canvasWidth = 0;
+      this._padding = { top: 30, right: 50, bottom: 30, left: 40 };
 
       if (this.data.curve.length > 0) {
-        this._buildHourItems();
-        // Default to current hour
-        const now = new Date();
-        const curMin = now.getHours() * 60;
-        this._selectedMinute = curMin;
-        this._updateHourDisplay(curMin);
         setTimeout(() => this.drawChart(), 300);
       }
       this._startBreathAnimation();
@@ -66,89 +57,12 @@ Component({
 
     detached() {
       if (this._breathTimer) clearInterval(this._breathTimer);
-      if (this._longPressTimer) clearTimeout(this._longPressTimer);
       if (this._animFrameId) cancelAnimationFrame(this._animFrameId);
+      if (this._hideTimer) clearTimeout(this._hideTimer);
     }
   },
 
   methods: {
-    _buildHourItems() {
-      const hours = [];
-      for (let h = 0; h <= 23; h++) {
-        hours.push({
-          hour: h,
-          label: `${String(h).padStart(2, '0')}:00`,
-          minute: h * 60
-        });
-      }
-      this.setData({ hourItems: hours });
-    },
-
-    _updateHourDisplay(minute) {
-      const { curve, tides } = this.data;
-      if (!curve.length) return;
-
-      // Snap to nearest hour
-      const hour = Math.round(minute / 60);
-      const snapMin = Math.max(0, Math.min(23, hour)) * 60;
-      this._selectedMinute = snapMin;
-
-      // Find curve point at this time
-      let closest = curve[0];
-      let minDist = Infinity;
-      for (const p of curve) {
-        const d = Math.abs(p.minute - snapMin);
-        if (d < minDist) { minDist = d; closest = p; }
-      }
-
-      // Determine trend
-      const idx = curve.indexOf(closest);
-      let trend = '平稳';
-      if (idx > 0 && idx < curve.length - 1) {
-        const diff = curve[idx + 1].height - curve[idx - 1].height;
-        if (diff > 0.05) trend = '正在涨潮 ↑';
-        else if (diff < -0.05) trend = '正在退潮 ↓';
-      }
-
-      // Find next tide event
-      let nextEvent = '';
-      for (const t of tides) {
-        const tMin = this.timeToMin(t.time);
-        if (tMin >= snapMin) {
-          nextEvent = `${t.type === 'high' ? '满潮' : '干潮'} ${t.time} ${t.height}m`;
-          break;
-        }
-      }
-
-      // Sea state
-      let seaState, advice;
-      if (closest.height < 1.5) {
-        seaState = '潮位较低，可前往滩涂';
-        advice = trend.includes('退') ? '非常适合' : '适合';
-      } else if (closest.height < 3) {
-        seaState = '海面较平，注意潮位变化';
-        advice = '一般';
-      } else {
-        seaState = '潮位较高，注意安全';
-        advice = '不建议';
-      }
-
-      const h = Math.floor(snapMin / 60);
-      const snapIdx = h;
-
-      this.setData({
-        showTooltip: true,
-        tooltipTime: `${String(h).padStart(2, '0')}:00`,
-        tooltipHeight: closest.height.toFixed(1) + 'm',
-        tooltipTrend: trend,
-        tooltipAdvice: advice,
-        tooltipSeaState: seaState + (nextEvent ? ' · ' + nextEvent : ''),
-        selectedHour: h,
-        selectedHourDisplay: `${String(h).padStart(2, '0')}:00`,
-        snapIndex: snapIdx
-      });
-    },
-
     _startBreathAnimation() {
       this._breathTimer = setInterval(() => {
         this._breathPhase += 0.05;
@@ -160,18 +74,15 @@ Component({
     },
 
     onTouchStart(e) {
+      if (this._hideTimer) { clearTimeout(this._hideTimer); this._hideTimer = null; }
+
       if (e.touches.length === 1) {
         this._touchStartX = e.touches[0].x;
         this._touchStartY = e.touches[0].y;
         this._lastMoveX = e.touches[0].x;
         this._isDragging = false;
         this._velocity = 0;
-
-        this._longPressTimer = setTimeout(() => {
-          this._handleTap(this._touchStartX);
-        }, 400);
       } else if (e.touches.length === 2) {
-        clearTimeout(this._longPressTimer);
         this._isPinching = true;
         const dx = e.touches[1].x - e.touches[0].x;
         const dy = e.touches[1].y - e.touches[0].y;
@@ -183,8 +94,9 @@ Component({
     onTouchMove(e) {
       if (e.touches.length === 1 && !this._isPinching) {
         const dx = e.touches[0].x - this._touchStartX;
-        if (Math.abs(dx) > 5) {
-          clearTimeout(this._longPressTimer);
+        const dy = e.touches[0].y - this._touchStartY;
+
+        if (!this._isDragging && Math.abs(dx) > 8) {
           this._isDragging = true;
         }
 
@@ -193,7 +105,12 @@ Component({
           this._velocity = moveX;
           this._offsetX += moveX;
           this._lastMoveX = e.touches[0].x;
-          this._handleTap(e.touches[0].x);
+          // Update drag point to finger position
+          this._updateDragAt(e.touches[0].x);
+          this.drawChart();
+        } else if (Math.abs(dy) < 20 && Math.abs(dx) < 8) {
+          // Finger is relatively still — show info at this point
+          this._updateDragAt(e.touches[0].x);
           this.drawChart();
         }
       } else if (e.touches.length === 2 && this._isPinching) {
@@ -206,48 +123,83 @@ Component({
       }
     },
 
-    onTouchEnd(e) {
-      clearTimeout(this._longPressTimer);
-
-      if (this._isDragging && !this._isPinching) {
+    onTouchEnd() {
+      if (this._isDragging) {
         this._startInertia();
       }
+      this._isPinching = false;
 
-      if (e.touches.length === 0) {
-        this._isPinching = false;
+      // Auto hide tooltip after 3s
+      this._hideTimer = setTimeout(() => {
+        this.setData({ showTooltip: false });
+        this._dragMinute = -1;
+        this.drawChart();
+      }, 3000);
+    },
+
+    _updateDragAt(touchX) {
+      const p = this._padding;
+      const chartW = this._canvasWidth - p.left - p.right;
+      if (chartW <= 0) return;
+      const scaledW = chartW * this._scaleX;
+      const adjustedX = touchX - p.left - this._offsetX;
+      const minute = Math.round((adjustedX / scaledW) * 1440);
+
+      if (minute < 0 || minute > 1440) return;
+      this._dragMinute = minute;
+
+      const { curve, tides } = this.data;
+      if (!curve.length) return;
+
+      // Find closest curve point
+      let closest = curve[0];
+      let minDist = Infinity;
+      for (const pt of curve) {
+        const d = Math.abs(pt.minute - minute);
+        if (d < minDist) { minDist = d; closest = pt; }
       }
-    },
 
-    _handleTap(touchX) {
-      const query = this.createSelectorQuery();
-      query.select('#tideCanvas')
-        .fields({ node: true, size: true })
-        .exec((res) => {
-          if (!res[0]) return;
-          const width = res[0].width;
-          const padding = { left: 40, right: 50 };
-          const chartW = width - padding.left - padding.right;
-          const scaledW = chartW * this._scaleX;
-          const adjustedX = touchX - padding.left - this._offsetX;
-          const ratio = adjustedX / scaledW;
-          const minute = Math.round(ratio * 1440);
+      // Trend
+      const idx = curve.indexOf(closest);
+      let trend = '平稳';
+      if (idx > 0 && idx < curve.length - 1) {
+        const diff = curve[idx + 1].height - curve[idx - 1].height;
+        if (diff > 0.05) trend = '涨潮中';
+        else if (diff < -0.05) trend = '退潮中';
+      }
 
-          if (minute < 0 || minute > 1440) return;
+      // Next tide event
+      let nextEvent = '';
+      for (const t of tides) {
+        const tMin = this.timeToMin(t.time);
+        if (tMin >= closest.minute) {
+          const label = t.type === 'high' ? '满潮' : '干潮';
+          nextEvent = `${label} ${t.time} ${t.height}m`;
+          break;
+        }
+      }
 
-          // Snap to nearest hour
-          const snapHour = Math.round(minute / 60);
-          const snapMin = Math.max(0, Math.min(23, snapHour)) * 60;
-          this._selectedMinute = snapMin;
-          this._updateHourDisplay(snapMin);
-          this.drawChart();
-        });
-    },
+      // Advice
+      let seaState, advice;
+      if (closest.height < 1.5) {
+        seaState = '潮位较低，滩涂露出';
+        advice = trend.includes('退') ? '非常适合' : '适合';
+      } else if (closest.height < 3) {
+        seaState = '海面平稳';
+        advice = '一般';
+      } else {
+        seaState = '潮位较高，注意安全';
+        advice = '不建议';
+      }
 
-    onHourTap(e) {
-      const hour = e.currentTarget.dataset.hour;
-      this._selectedMinute = hour * 60;
-      this._updateHourDisplay(hour * 60);
-      this.drawChart();
+      this.setData({
+        showTooltip: true,
+        tooltipTime: closest.time,
+        tooltipHeight: closest.height.toFixed(1) + 'm',
+        tooltipTrend: trend,
+        tooltipAdvice: advice,
+        tooltipSeaState: seaState + (nextEvent ? '  ' + nextEvent : '')
+      });
     },
 
     _startInertia() {
@@ -276,13 +228,14 @@ Component({
           canvas.height = height * dpr;
           ctx.scale(dpr, dpr);
 
+          this._canvasWidth = width;
           this.renderChart(ctx, width, height);
         });
     },
 
     renderChart(ctx, w, h) {
       const { curve, tides, flowSpeed, sunrise, sunset, mode } = this.data;
-      const padding = { top: 30, right: 50, bottom: 30, left: 40 };
+      const padding = this._padding;
       const chartW = w - padding.left - padding.right;
       const chartH = h - padding.top - padding.bottom;
       const scaledW = chartW * this._scaleX;
@@ -317,57 +270,83 @@ Component({
 
       this.drawPeakMarkers(ctx, tides, toX, toY);
       this.drawCurrentTimeGlow(ctx, curve, toX, toY, padding, h);
-      this.drawSelectedHourLine(ctx, curve, toX, toY, padding, h);
-      ctx.restore();
 
+      // Draw drag crosshair
+      if (this._dragMinute >= 0 && curve.length) {
+        this.drawDragCrosshair(ctx, curve, toX, toY, padding, h);
+      }
+
+      ctx.restore();
       this.drawLegend(ctx, w, h, mode);
     },
 
-    drawSelectedHourLine(ctx, curve, toX, toY, padding, h) {
-      if (this._selectedMinute < 0 || !curve.length) return;
+    drawDragCrosshair(ctx, curve, toX, toY, padding, h) {
+      const minute = this._dragMinute;
 
-      const x = toX(this._selectedMinute);
-
-      // Find height at selected time
       let closest = curve[0];
       let minDist = Infinity;
       for (const p of curve) {
-        const d = Math.abs(p.minute - this._selectedMinute);
+        const d = Math.abs(p.minute - minute);
         if (d < minDist) { minDist = d; closest = p; }
       }
+
+      const x = toX(closest.minute);
       const y = toY(closest.height);
 
-      // Vertical highlight line
-      ctx.strokeStyle = 'rgba(245, 166, 35, 0.5)';
-      ctx.lineWidth = 1.5;
+      // Vertical crosshair line
+      ctx.strokeStyle = 'rgba(245, 166, 35, 0.6)';
+      ctx.lineWidth = 1;
       ctx.setLineDash([]);
       ctx.beginPath();
       ctx.moveTo(x, padding.top);
       ctx.lineTo(x, h - padding.bottom);
       ctx.stroke();
 
-      // Horizontal dot on curve
-      ctx.save();
-      ctx.shadowColor = 'rgba(245, 166, 35, 0.8)';
-      ctx.shadowBlur = 10;
+      // Horizontal guide line
+      ctx.strokeStyle = 'rgba(245, 166, 35, 0.3)';
       ctx.beginPath();
-      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(h, y);
+      ctx.stroke();
+
+      // Glow dot on curve
+      ctx.save();
+      ctx.shadowColor = 'rgba(245, 166, 35, 0.9)';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
       ctx.fillStyle = '#F5A623';
       ctx.fill();
       ctx.restore();
 
-      // White border
+      // White border on dot
       ctx.beginPath();
-      ctx.arc(x, y, 6, 0, Math.PI * 2);
-      ctx.strokeStyle = '#FFFFFF';
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Height label above dot
-      ctx.font = 'bold 10px sans-serif';
-      ctx.fillStyle = '#F5A623';
+      // Height + time label
+      ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${closest.height.toFixed(1)}m`, x, y - 14);
+      ctx.fillStyle = '#F5A623';
+
+      // Background pill for label
+      const label = `${closest.time}  ${closest.height.toFixed(1)}m`;
+      const tw = ctx.measureText(label).width + 12;
+      const lx = x - tw / 2;
+      const ly = y - 28;
+
+      ctx.fillStyle = 'rgba(10, 22, 40, 0.85)';
+      ctx.beginPath();
+      ctx.roundRect(lx, ly, tw, 18, 4);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(245, 166, 35, 0.5)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#F5A623';
+      ctx.fillText(label, x, ly + 13);
       ctx.textAlign = 'start';
     },
 
@@ -387,13 +366,13 @@ Component({
     },
 
     drawGrid(ctx, padding, chartW, chartH, maxH, toX, toY, totalW) {
-      ctx.strokeStyle = 'rgba(139, 164, 184, 0.1)';
-      ctx.lineWidth = 0.5;
       ctx.font = '10px sans-serif';
       ctx.fillStyle = 'rgba(139, 164, 184, 0.6)';
 
       for (let i = 0; i <= maxH; i++) {
         const y = toY(i);
+        ctx.strokeStyle = 'rgba(139, 164, 184, 0.1)';
+        ctx.lineWidth = 0.5;
         ctx.beginPath();
         ctx.moveTo(padding.left, y);
         ctx.lineTo(padding.left + chartW, y);
@@ -406,6 +385,7 @@ Component({
         if (x >= padding.left - 5 && x <= totalW - padding.right + 5) {
           const isMajor = hour % 3 === 0;
           ctx.strokeStyle = isMajor ? 'rgba(139, 164, 184, 0.15)' : 'rgba(139, 164, 184, 0.05)';
+          ctx.lineWidth = 0.5;
           ctx.beginPath();
           ctx.moveTo(x, padding.top);
           ctx.lineTo(x, padding.top + chartH);
@@ -477,8 +457,7 @@ Component({
       ctx.shadowBlur = 8 + Math.sin(this._breathPhase) * 3;
 
       const strokeGrad = ctx.createLinearGradient(
-        toX(curve[0].minute), 0,
-        toX(curve[curve.length - 1].minute), 0
+        toX(curve[0].minute), 0, toX(curve[curve.length - 1].minute), 0
       );
       strokeGrad.addColorStop(0, '#1A6B5A');
       strokeGrad.addColorStop(0.3, '#2D9B7F');
@@ -493,10 +472,7 @@ Component({
         const prev = curve[i - 1];
         const curr = curve[i];
         const cpx = (toX(prev.minute) + toX(curr.minute)) / 2;
-        ctx.quadraticCurveTo(
-          toX(prev.minute), toY(prev.height),
-          cpx, (toY(prev.height) + toY(curr.height)) / 2
-        );
+        ctx.quadraticCurveTo(toX(prev.minute), toY(prev.height), cpx, (toY(prev.height) + toY(curr.height)) / 2);
       }
       ctx.lineTo(toX(curve[curve.length - 1].minute), toY(curve[curve.length - 1].height));
       ctx.stroke();
@@ -513,10 +489,7 @@ Component({
         const prev = curve[i - 1];
         const curr = curve[i];
         const cpx = (toX(prev.minute) + toX(curr.minute)) / 2;
-        ctx.quadraticCurveTo(
-          toX(prev.minute), toY(prev.height),
-          cpx, (toY(prev.height) + toY(curr.height)) / 2
-        );
+        ctx.quadraticCurveTo(toX(prev.minute), toY(prev.height), cpx, (toY(prev.height) + toY(curr.height)) / 2);
       }
       ctx.stroke();
       ctx.restore();
@@ -530,11 +503,9 @@ Component({
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
       flowSpeed.forEach((f, i) => {
-        const min = i * 10;
-        const x = toX(min);
+        const x = toX(i * 10);
         const y = padding.top + chartH - (f.speed / maxSpeed) * chartH * 0.3;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       });
       ctx.stroke();
       ctx.setLineDash([]);
@@ -561,9 +532,7 @@ Component({
 
         ctx.font = '9px sans-serif';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-        const label = `${tide.time} ${tide.height}m`;
-        const textY = tide.type === 'high' ? y - 12 : y + 16;
-        ctx.fillText(label, x - 20, textY);
+        ctx.fillText(`${tide.time} ${tide.height}m`, x - 20, tide.type === 'high' ? y - 12 : y + 16);
       });
     },
 
@@ -624,30 +593,30 @@ Component({
       ctx.fillStyle = 'rgba(45, 139, 111, 0.4)';
       ctx.fillRect(10, y - 6, 12, 12);
       ctx.fillStyle = '#8BA4B8';
-      ctx.fillText('白天潮', 25, y + 4);
+      ctx.fillText('白天', 25, y + 4);
 
       ctx.fillStyle = 'rgba(13, 43, 78, 0.8)';
-      ctx.fillRect(70, y - 6, 12, 12);
+      ctx.fillRect(60, y - 6, 12, 12);
       ctx.fillStyle = '#8BA4B8';
-      ctx.fillText('晚上汐', 85, y + 4);
+      ctx.fillText('夜间', 75, y + 4);
 
       if (mode === 'fishing') {
         ctx.strokeStyle = '#E74C3C';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(130, y);
-        ctx.lineTo(142, y);
+        ctx.moveTo(110, y);
+        ctx.lineTo(122, y);
         ctx.stroke();
         ctx.fillStyle = '#8BA4B8';
-        ctx.fillText('流速', 146, y + 4);
+        ctx.fillText('流速', 126, y + 4);
       }
 
       ctx.beginPath();
-      ctx.arc(mode === 'fishing' ? 180 : 130, y, 4, 0, Math.PI * 2);
+      ctx.arc(mode === 'fishing' ? 160 : 110, y, 4, 0, Math.PI * 2);
       ctx.fillStyle = '#2DD4AA';
       ctx.fill();
       ctx.fillStyle = '#8BA4B8';
-      ctx.fillText('现在', (mode === 'fishing' ? 188 : 138), y + 4);
+      ctx.fillText('现在', (mode === 'fishing' ? 168 : 118), y + 4);
     },
 
     timeToMin(str) {

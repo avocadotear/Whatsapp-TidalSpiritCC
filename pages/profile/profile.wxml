@@ -4,7 +4,7 @@
     <view class="banner-bg"></view>
     <view class="user-info">
       <view class="avatar">
-        <text class="avatar-text">🌊</text>
+        <text class="avatar-text">潮</text>
       </view>
       <text class="user-name">{{userInfo.nickName}}</text>
       <view class="user-meta">

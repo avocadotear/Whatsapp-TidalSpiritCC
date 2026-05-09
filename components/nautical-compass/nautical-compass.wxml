@@ -1,6 +1,6 @@
 <view class="compass-section">
   <view class="compass-title-bar">
-    <text class="compass-icon-text">🧭</text>
+    <text class="compass-icon-text">指南针</text>
     <text class="compass-title">航海指南针</text>
   </view>
 

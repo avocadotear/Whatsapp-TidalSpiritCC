@@ -9,35 +9,19 @@
     bindtouchend="onTouchEnd"
   ></canvas>
 
-  <!-- Hour detail card -->
-  <view class="hour-card {{showTooltip ? 'show' : ''}}" wx:if="{{showTooltip}}">
-    <view class="hour-card-top">
-      <text class="hour-card-time">{{tooltipTime}}</text>
-      <text class="hour-card-height">{{tooltipHeight}}</text>
-      <text class="hour-card-trend">{{tooltipTrend}}</text>
+  <view class="tooltip {{showTooltip ? 'show' : ''}}" wx:if="{{showTooltip}}">
+    <view class="tooltip-row">
+      <text class="tooltip-time">{{tooltipTime}}</text>
+      <text class="tooltip-height">{{tooltipHeight}}</text>
     </view>
-    <view class="hour-card-mid">
-      <text class="hour-card-label">赶海建议</text>
-      <text class="hour-card-advice {{tooltipAdvice === '非常适合' ? 'excellent' : tooltipAdvice === '适合' ? 'good' : 'bad'}}">{{tooltipAdvice}}</text>
+    <view class="tooltip-row">
+      <text class="tooltip-label">趋势</text>
+      <text class="tooltip-value">{{tooltipTrend}}</text>
+      <text class="tooltip-label">赶海</text>
+      <text class="tooltip-value {{tooltipAdvice === '非常适合' ? 'excellent' : tooltipAdvice === '适合' ? 'good' : 'bad'}}">{{tooltipAdvice}}</text>
     </view>
-    <view class="hour-card-bottom">
-      <text class="hour-card-sea">{{tooltipSeaState}}</text>
+    <view class="tooltip-row">
+      <text class="tooltip-sea">{{tooltipSeaState}}</text>
     </view>
   </view>
-
-  <!-- Hour timeline scrollbar -->
-  <scroll-view class="hour-scroll" scroll-x scroll-into-view="hour-{{snapIndex}}" scroll-with-animation>
-    <view class="hour-list">
-      <view
-        wx:for="{{hourItems}}"
-        wx:key="hour"
-        id="hour-{{index}}"
-        class="hour-chip {{selectedHour === item.hour ? 'active' : ''}}"
-        data-hour="{{item.hour}}"
-        bindtap="onHourTap"
-      >
-        <text class="hour-chip-label">{{item.label}}</text>
-      </view>
-    </view>
-  </scroll-view>
 </view>

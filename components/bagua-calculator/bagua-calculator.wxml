@@ -1,6 +1,5 @@
 <view class="bagua-section">
   <view class="bagua-title-bar">
-    <text class="bagua-icon-text">☯</text>
     <text class="bagua-title">八卦算盘 · 赶海预测</text>
   </view>
 
@@ -14,26 +13,49 @@
       <text class="tap-hint-text">点击开始测算</text>
     </view>
     <view class="calculating-overlay" wx:if="{{isCalculating}}">
-      <view class="calc-ring">
-        <view class="calc-dot"></view>
-      </view>
+      <view class="calc-ring"></view>
       <text class="calc-text">{{resultText}}</text>
     </view>
   </view>
 
   <view class="factors-grid">
     <view class="factor-item" wx:for="{{factors}}" wx:key="label">
-      <text class="factor-icon">{{item.icon}}</text>
       <text class="factor-label">{{item.label}}</text>
       <text class="factor-value">{{item.value}}</text>
     </view>
   </view>
 
-  <view class="prediction-result {{resultClass}}" wx:if="{{showResult || !showResult}}">
+  <view class="prediction-result {{resultClass}}" wx:if="{{showResult}}">
     <view class="result-header">
       <text class="result-level">{{resultLevel}}</text>
-      <text class="result-retry" wx:if="{{showResult}}" bindtap="onTapCalculate">重新测算</text>
+      <text class="result-retry" bindtap="onTapCalculate">重新测算</text>
     </view>
-    <view class="result-text" wx:if="{{resultText}}">{{resultText}}</view>
+
+    <view class="result-verdict" wx:if="{{resultText}}">{{resultText}}</view>
+
+    <view class="result-detail" wx:if="{{resultDetail}}">
+      <text class="detail-label">综合分析</text>
+      <text class="detail-text">{{resultDetail}}</text>
+    </view>
+
+    <view class="result-info-row" wx:if="{{resultBestTime}}">
+      <text class="info-label">最佳时段</text>
+      <text class="info-value">{{resultBestTime}}</text>
+    </view>
+
+    <view class="result-info-row" wx:if="{{resultArea}}">
+      <text class="info-label">推荐区域</text>
+      <text class="info-value">{{resultArea}}</text>
+    </view>
+
+    <view class="result-info-row" wx:if="{{resultTips}}">
+      <text class="info-label">注意事项</text>
+      <text class="info-value">{{resultTips}}</text>
+    </view>
+
+    <view class="result-info-row" wx:if="{{resultItems}}">
+      <text class="info-label">携带物品</text>
+      <text class="info-value">{{resultItems}}</text>
+    </view>
   </view>
 </view>
